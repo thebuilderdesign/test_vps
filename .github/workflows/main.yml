@@ -1,0 +1,27 @@
+name: VPS with Ngrok
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Ngrok
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y unzip
+        wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
+        unzip ngrok-stable-linux-amd64.zip
+        sudo mv ngrok /usr/local/bin/
+
+    - name: Start VPS
+      run: |
+        chmod +x start.sh
+        ./start.sh
+
+    - name: Run Ngrok
+      run: ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }} && ngrok tcp 22
