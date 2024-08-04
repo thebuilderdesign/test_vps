@@ -13,7 +13,7 @@ jobs:
     - name: Set up Ngrok
       run: |
         sudo apt-get update
-        sudo apt-get install -y unzip
+        sudo apt-get install -y unzip curl jq
         wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
         unzip ngrok-stable-linux-amd64.zip
         sudo mv ngrok /usr/local/bin/
@@ -26,11 +26,15 @@ jobs:
     - name: Run Ngrok
       run: |
         ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
-        ngrok tcp 22 &
+        ngrok tcp 22 > /dev/null &
         sleep 5
         ngrok_url=$(curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+        if [ -z "$ngrok_url" ]; then
+          echo "Ngrok URL is empty. Check the Ngrok service."
+          exit 1
+        fi
         echo "Ngrok URL: $ngrok_url"
-        echo "Ngrok URL: $ngrok_url" > ngrok_url.txt
+        echo "$ngrok_url" > ngrok_url.txt
 
     - name: Upload Ngrok URL
       uses: actions/upload-artifact@v2
