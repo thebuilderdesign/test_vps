@@ -27,11 +27,13 @@ jobs:
     - name: Run Ngrok
       run: |
         ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
-        ngrok tcp 22 > /dev/null &
-        sleep 5
+        ngrok tcp 22 > /tmp/ngrok.log &
+        sleep 10
         ngrok_url=$(curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url')
         if [ -z "$ngrok_url" ]; then
           echo "Ngrok URL is empty. Check the Ngrok service."
+          echo "Ngrok log:"
+          cat /tmp/ngrok.log
           exit 1
         fi
         echo "Ngrok URL: $ngrok_url"
